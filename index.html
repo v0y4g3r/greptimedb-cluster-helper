@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreptimeDB Cluster Config Generator</title>
+        <!-- Syntax highlighting (Highlight.js) -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/dracula.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        .machines-area {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-height: 500px;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .component-pool {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .component-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .component-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .component-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .component-icon {
+            font-size: 1.2em;
+        }
+
+        .add-machine-btn {
+            width: 100%;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .add-machine-btn:hover {
+            background: #218838;
+        }
+
+        .machine-card {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .machine-card.drag-over {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .machine-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .machine-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .delete-machine-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+
+        .delete-machine-btn:hover {
+            background: #c82333;
+        }
+
+        .machine-inputs {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-weight: 500;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .input-group input {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 0.95em;
+        }
+
+        .components-slot {
+            min-height: 60px;
+            background: white;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+
+        .components-slot.drag-over {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .slot-label {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .machine-component {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 8px 12px;
+            margin: 5px;
+            border-radius: 6px;
+            cursor: grab;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+            transition: transform 0.2s;
+        }
+
+        .machine-component:hover {
+            transform: translateY(-1px);
+        }
+
+        .delete-component-btn {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .delete-component-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .generation-area {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .generate-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .output-area {
+            background: #1e1e1e;
+            color: #f8f8f2;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 600px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+
+        .output-instruction {
+            background: #fff3cd;
+            color: #856404;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 0.9em;
+            margin-bottom: 6px;
+            border: 1px solid #ffe8a1;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 5px;
+            margin-bottom: 30px; /* extra space before next command section */
+            display: block;
+            margin-left: auto;
+            margin-right: auto; /* center the button */
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .warning-message {
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ffeaa7;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #c3e6cb;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 GreptimeDB Cluster Config Generator</h1>
+        <p>Visually design your GreptimeDB cluster deployment and generate configuration files</p>
+    </div>
+
+    <div class="container">
+        <div id="messageArea"></div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <h2 class="section-title">📦 Components</h2>
+                <div class="component-pool">
+                    <div class="component-item" draggable="true" data-component-type="etcd" ondragstart="drag(event)">
+                        <span class="component-icon">🔧</span>
+                        <span>etcd</span>
+                    </div>
+                    <div class="component-item" draggable="true" data-component-type="metasrv" ondragstart="drag(event)">
+                        <span class="component-icon">⚙️</span>
+                        <span>metasrv</span>
+                    </div>
+                    <div class="component-item" draggable="true" data-component-type="datanode" ondragstart="drag(event)">
+                        <span class="component-icon">💾</span>
+                        <span>datanode</span>
+                    </div>
+                    <div class="component-item" draggable="true" data-component-type="frontend" ondragstart="drag(event)">
+                        <span class="component-icon">🌐</span>
+                        <span>frontend</span>
+                    </div>
+                </div>
+
+                <button class="add-machine-btn" onclick="addMachine()">
+                    ➕ Add Physical Machine
+                </button>
+            </div>
+
+            <div class="machines-area">
+                <h2 class="section-title">🖥️ Physical Machines</h2>
+                <div id="machinesContainer"></div>
+            </div>
+        </div>
+
+        <div class="generation-area">
+            <h2 class="section-title">⚡ Generate Configuration</h2>
+            <button class="generate-btn" onclick="generateConfigs()" id="generateBtn">
+                Generate Config Files & Commands
+            </button>
+            <div id="outputContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        let machines = [];
+        let machineIdCounter = 1;
+        let draggedComponent = null;
+        let draggedFromMachine = null;
+
+        function showMessage(message, type = 'info') {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = `<div class="${type}-message">${message}</div>`;
+            setTimeout(() => {
+                messageArea.innerHTML = '';
+            }, 5000);
+        }
+
+        function addMachine() {
+            const machine = {
+                id: machineIdCounter++,
+                hostIp: '',
+                greptimeHome: '/opt/greptimedb'
+            };
+            machines.push(machine);
+            renderMachines();
+            showMessage('Machine added successfully', 'success');
+        }
+
+        function deleteMachine(machineId) {
+            machines = machines.filter(m => m.id !== machineId);
+            renderMachines();
+            showMessage('Machine deleted', 'success');
+        }
+
+        function deleteComponent(machineId, componentIndex) {
+            const machine = machines.find(m => m.id === machineId);
+            if (machine && machine.components) {
+                const comp = machine.components[componentIndex];
+                if (comp.count > 1) {
+                    comp.count--;
+                } else {
+                    machine.components.splice(componentIndex, 1);
+                }
+                renderMachines();
+                showMessage('Component deleted', 'success');
+            }
+        }
+
+        function updateMachine(machineId, field, value) {
+            const machine = machines.find(m => m.id === machineId);
+            if (machine) {
+                machine[field] = value;
+            }
+        }
+
+        function renderMachines() {
+            const container = document.getElementById('machinesContainer');
+
+            if (machines.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 40px;">No machines added yet. Click "Add Physical Machine" to start.</p>';
+                return;
+            }
+
+            container.innerHTML = machines.map(machine => `
+                <div class="machine-card" data-machine-id="${machine.id}">
+                    <div class="machine-header">
+                        <div class="machine-title">Machine ${machine.id}</div>
+                        <button class="delete-machine-btn" onclick="deleteMachine(${machine.id})">🗑️ Delete</button>
+                    </div>
+                    <div class="machine-inputs">
+                        <div class="input-group">
+                            <label>Host IP Address:</label>
+                            <input type="text"
+                                   placeholder="e.g., 192.168.1.100"
+                                   value="${machine.hostIp}"
+                                   onchange="updateMachine(${machine.id}, 'hostIp', this.value)">
+                        </div>
+                        <div class="input-group">
+                            <label>GreptimeDB Home Directory:</label>
+                            <input type="text"
+                                   placeholder="e.g., /opt/greptimedb"
+                                   value="${machine.greptimeHome}"
+                                   onchange="updateMachine(${machine.id}, 'greptimeHome', this.value)">
+                        </div>
+                    </div>
+                    <div class="components-slot"
+                         ondrop="drop(event, ${machine.id})"
+                         ondragover="allowDrop(event)"
+                         ondragleave="dragLeave(event)">
+                        ${(!machine.components || machine.components.length === 0) ? '<div class="slot-label">Drag components here</div>' : ''}
+                        <div id="machine-components-${machine.id}" ondrop="drop(event, ${machine.id})" ondragover="allowDrop(event)">
+                            ${renderMachineComponents(machine)}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderMachineComponents(machine) {
+            if (!machine.components || machine.components.length === 0) {
+                return '';
+            }
+
+            return machine.components.map((comp, index) =>
+                `<span class="machine-component"
+                        draggable="true"
+                        data-component-type="${comp.type}"
+                        data-machine-id="${machine.id}"
+                        data-component-index="${index}"
+                        ondragstart="dragFromMachine(event)">
+                    ${getComponentIcon(comp.type)} ${comp.type}${comp.count > 1 ? ' (' + comp.count + ')' : ''}
+                    <button class="delete-component-btn" onclick="deleteComponent(${machine.id}, ${index})" title="Delete component">×</button>
+                </span>`
+            ).join('');
+        }
+
+        function getComponentIcon(type) {
+            const icons = {
+                'etcd': '🔧',
+                'metasrv': '⚙️',
+                'datanode': '💾',
+                'frontend': '🌐'
+            };
+            return icons[type] || '📦';
+        }
+
+        function drag(event) {
+            draggedComponent = event.target.dataset.componentType;
+            draggedFromMachine = null;
+            event.target.classList.add('dragging');
+            // Set drag data for better browser compatibility
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', event.target.dataset.componentType);
+        }
+
+        function dragFromMachine(event) {
+            draggedComponent = event.target.dataset.componentType;
+            draggedFromMachine = {
+                machineId: parseInt(event.target.dataset.machineId),
+                componentIndex: parseInt(event.target.dataset.componentIndex)
+            };
+            event.target.classList.add('dragging');
+            // Set drag data for better browser compatibility
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', event.target.dataset.componentType);
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.dataTransfer.dropEffect = 'move';
+            event.currentTarget.classList.add('drag-over');
+        }
+
+        function dragLeave(event) {
+            event.currentTarget.classList.remove('drag-over');
+        }
+
+        function drop(event, machineId) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            // Remove drag-over class from all elements
+            document.querySelectorAll('.drag-over').forEach(elem => {
+                elem.classList.remove('drag-over');
+            });
+
+            const machine = machines.find(m => m.id === machineId);
+            if (!machine) return;
+
+            if (!machine.components) {
+                machine.components = [];
+            }
+
+            if (draggedFromMachine) {
+                // Moving component from one machine to another
+                const sourceMachine = machines.find(m => m.id === draggedFromMachine.machineId);
+                if (sourceMachine && sourceMachine.components) {
+                    const component = sourceMachine.components[draggedFromMachine.componentIndex];
+                    if (component) {
+                        sourceMachine.components.splice(draggedFromMachine.componentIndex, 1);
+
+                        if (draggedFromMachine.machineId !== machineId) {
+                            // Moving to different machine
+                            machine.components.push(component);
+                        }
+                        // If same machine, just remove (reordering not needed)
+                    }
+                }
+            } else if (draggedComponent) {
+                // Adding new component from sidebar
+                const existingComp = machine.components.find(c => c.type === draggedComponent);
+                if (existingComp) {
+                    existingComp.count++;
+                } else {
+                    machine.components.push({ type: draggedComponent, count: 1 });
+                }
+            }
+
+            // Reset drag state
+            draggedComponent = null;
+            draggedFromMachine = null;
+
+            renderMachines();
+        }
+
+        function validateCluster() {
+            const errors = [];
+
+            if (machines.length === 0) {
+                errors.push('At least one physical machine is required');
+            }
+
+            machines.forEach(machine => {
+                if (!machine.hostIp) {
+                    errors.push(`Machine ${machine.id} needs a Host IP address`);
+                }
+                if (!machine.greptimeHome) {
+                    errors.push(`Machine ${machine.id} needs a GreptimeDB Home directory`);
+                }
+            });
+
+            const allComponents = machines.flatMap(m => m.components || []);
+            const componentCounts = {};
+
+            allComponents.forEach(comp => {
+                componentCounts[comp.type] = (componentCounts[comp.type] || 0) + comp.count;
+            });
+
+            if (!componentCounts.etcd || componentCounts.etcd < 1) {
+                errors.push('At least 1 etcd component is required');
+            }
+            if (!componentCounts.metasrv || componentCounts.metasrv < 1) {
+                errors.push('At least 1 metasrv component is required');
+            }
+            if (!componentCounts.datanode || componentCounts.datanode < 1) {
+                errors.push('At least 1 datanode component is required');
+            }
+            if (!componentCounts.frontend || componentCounts.frontend < 1) {
+                errors.push('At least 1 frontend component is required');
+            }
+
+            return errors;
+        }
+
+        function generateConfigs() {
+            const errors = validateCluster();
+
+            if (errors.length > 0) {
+                showMessage('Validation errors:<br>' + errors.join('<br>'), 'error');
+                return;
+            }
+
+            // Each entry: { text, type, machineId, hostIp, greptimeHome, cardinal, step }
+            const configs = [];
+            // Global component counters for cardinals (0-based)
+            const globalComponentCounts = { etcd: -1, metasrv: -1, datanode: -1, frontend: -1 };
+
+            // Precompute per-machine component counters for port bumping
+            const machineComponentCountsById = {};
+            machines.forEach(machine => {
+                machineComponentCountsById[machine.id] = { etcd: 0, metasrv: 0, datanode: 0, frontend: 0 };
+            });
+
+            // Global deployment order:
+            // 1) all etcd, 2) all metasrv, 3) all datanode, 4) all frontend
+            const typeOrder = ['etcd', 'metasrv', 'datanode', 'frontend'];
+
+            typeOrder.forEach(type => {
+                let firstOfType = true;
+
+                machines.forEach(machine => {
+                    if (!machine.components) return;
+
+                    const comp = machine.components.find(c => c.type === type);
+                    if (!comp) return;
+
+                    const machineCounts = machineComponentCountsById[machine.id];
+
+                    for (let i = 0; i < comp.count; i++) {
+                        // Increment global counter for cardinal (0-based)
+                        globalComponentCounts[type]++;
+                        const cardinal = globalComponentCounts[type];
+
+                        // Increment machine-specific counter for port calculation
+                        const machineIndex = machineCounts[type]++;
+
+                        let configText = '';
+                        switch (type) {
+                            case 'etcd':
+                                configText = generateEtcdConfig(machine, cardinal);
+                                break;
+                            case 'metasrv':
+                                configText = generateMetasrvConfig(machine, cardinal, machineIndex);
+                                break;
+                            case 'datanode':
+                                configText = generateDatanodeConfig(machine, cardinal, machineIndex);
+                                break;
+                            case 'frontend':
+                                configText = generateFrontendConfig(machine, cardinal, machineIndex);
+                                break;
+                        }
+
+                        // Merge header with first command block of each type
+                        if (firstOfType) {
+                            const header = `# ===== ${type.toUpperCase()} =====`;
+                            configs.push({
+                                text: `${header}\n\n${configText}`,
+                                type,
+                                machineId: machine.id,
+                                hostIp: machine.hostIp || '$HOST_IP',
+                                greptimeHome: machine.greptimeHome,
+                                cardinal,
+                                step: typeOrder.indexOf(type) + 1
+                            });
+                            firstOfType = false;
+                        } else {
+                            configs.push({
+                                text: configText,
+                                type,
+                                machineId: machine.id,
+                                hostIp: machine.hostIp || '$HOST_IP',
+                                greptimeHome: machine.greptimeHome,
+                                cardinal,
+                                step: typeOrder.indexOf(type) + 1
+                            });
+                        }
+                    }
+                });
+            });
+
+            const container = document.getElementById('outputContainer');
+            container.innerHTML = '';
+
+            // Create one highlighted instruction + output block + copy button per config
+            configs.forEach(cfg => {
+                const instruction = document.createElement('div');
+                instruction.className = 'output-instruction';
+                instruction.innerHTML = `<strong>Step ${cfg.step}:</strong> Deploy <strong>${cfg.type}</strong> on <strong>${cfg.hostIp}</strong> (Machine ${cfg.machineId}, GREPTIME_HOME=<code>${cfg.greptimeHome}</code>, instance #${cfg.cardinal})`;
+                container.appendChild(instruction);
+
+                // Create syntax-highlighted bash block
+                const outputArea = document.createElement('pre');
+                outputArea.className = 'output-area';
+                const code = document.createElement('code');
+                code.className = 'language-bash';
+                code.textContent = cfg.text;
+                outputArea.appendChild(code);
+                container.appendChild(outputArea);
+
+                // Apply syntax highlighting if highlight.js is available
+                if (window.hljs && typeof window.hljs.highlightElement === 'function') {
+                    window.hljs.highlightElement(code);
+                }
+
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn';
+                copyBtn.textContent = '📋 Copy This Block';
+                copyBtn.onclick = () => {
+                    navigator.clipboard.writeText(cfg.text);
+                    showMessage('Block copied to clipboard!', 'success');
+                };
+                container.appendChild(copyBtn);
+            });
+
+            showMessage('Configuration generated successfully!', 'success');
+        }
+
+        function getEtcdHostIp() {
+            for (let machine of machines) {
+                if (machine.components) {
+                    const etcdComp = machine.components.find(c => c.type === 'etcd');
+                    if (etcdComp) {
+                        return machine.hostIp;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function getMetasrvHostIp() {
+            for (let machine of machines) {
+                if (machine.components) {
+                    const metasrvComp = machine.components.find(c => c.type === 'metasrv');
+                    if (metasrvComp) {
+                        return machine.hostIp;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function getMetasrvPort() {
+            // Find the first metasrv and return its port (default 3002, or bumped if multiple on same machine)
+            for (let machine of machines) {
+                if (machine.components) {
+                    const metasrvComp = machine.components.find(c => c.type === 'metasrv');
+                    if (metasrvComp) {
+                        // First metasrv on this machine uses port 3002
+                        return 3002;
+                    }
+                }
+            }
+            return 3002;
+        }
+
+        function generateEtcdConfig(machine, count) {
+            return `nohup etcd --data-dir=${machine.greptimeHome}/etcd/data > ${machine.greptimeHome}/logs/etcd.log 2>&1 &`;
+        }
+
+        function generateMetasrvConfig(machine, cardinal, machineIndex) {
+            const etcdHostIp = getEtcdHostIp();
+            
+            // Port bumping: if multiple metasrv on same machine, bump ports
+            // First instance: 3002, 3100; Second: 3003, 3110; etc.
+            const bindPort = 3002 + machineIndex;
+            const httpPort = 3100 + machineIndex * 10;
+
+            return `cat <<EOF > ${machine.greptimeHome}/config/metasrv-${cardinal}.toml
+data_home = "${machine.greptimeHome}/data/metasrv/"
+bind_addr = "0.0.0.0:${bindPort}"
+server_addr = "${machine.hostIp}:${bindPort}"
+store_addrs = ["${etcdHostIp}:2379"]
+
+[http]
+addr = "0.0.0.0:${httpPort}"
+backend = "etcd_store"
+EOF
+
+greptime metasrv start -c ${machine.greptimeHome}/config/metasrv-${cardinal}.toml`;
+        }
+
+        function generateDatanodeConfig(machine, cardinal, machineIndex) {
+            const metasrvHostIp = getMetasrvHostIp();
+            const metasrvPort = getMetasrvPort();
+            
+            // Port bumping: if multiple datanode on same machine, bump ports
+            // First instance: 4200, 4201; Second: 4210, 4211; etc.
+            const httpPort = 4200 + machineIndex * 10;
+            const grpcPort = 4201 + machineIndex * 10;
+
+            return `cat <<EOF > ${machine.greptimeHome}/config/datanode-${cardinal}.toml
+node_id = ${cardinal}
+
+[http]
+addr = "0.0.0.0:${httpPort}"
+timeout = "0s"
+body_limit = "64MB"
+
+
+[grpc]
+bind_addr = "0.0.0.0:${grpcPort}"
+server_addr = "${machine.hostIp}:${grpcPort}"
+runtime_size = 8
+max_recv_message_size = "512MB"
+max_send_message_size = "512MB"
+flight_compression = "none"
+
+
+[meta_client]
+metasrv_addrs = ["${metasrvHostIp}:${metasrvPort}"]
+
+[wal]
+provider = "raft_engine"
+dir = "${machine.greptimeHome}/data/datanode${cardinal}/wal"
+file_size = "128MB"
+purge_threshold = "1GB"
+sync_write = false
+enable_log_recycle = true
+prefill_log_files = false
+max_batch_bytes = "1MB"
+
+
+[storage]
+# The working home directory.
+data_home = "${machine.greptimeHome}/data/datanode-${cardinal}/"
+# Storage type.
+type = "File"
+
+[logging]
+dir = "${machine.greptimeHome}/logs/datanode-${cardinal}/"
+EOF
+
+greptime datanode start -c ${machine.greptimeHome}/config/datanode-${cardinal}.toml`;
+        }
+
+        function generateFrontendConfig(machine, cardinal, machineIndex) {
+            const metasrvHostIp = getMetasrvHostIp();
+            const metasrvPort = getMetasrvPort();
+            
+            // Port bumping: if multiple frontend on same machine, bump ports
+            // First instance: 4000, 4001, 4002, 4003; Second: 4010, 4011, 4012, 4013; etc.
+            const httpPort = 4000 + machineIndex * 10;
+            const grpcPort = 4001 + machineIndex * 10;
+            const mysqlPort = 4002 + machineIndex * 10;
+            const postgresPort = 4003 + machineIndex * 10;
+
+            return `cat <<EOF > ${machine.greptimeHome}/config/frontend-${cardinal}.toml
+[http]
+addr = "0.0.0.0:${httpPort}"
+timeout = "0s"
+body_limit = "64MB"
+
+[meta_client]
+metasrv_addrs = ["${metasrvHostIp}:${metasrvPort}"]
+
+[grpc]
+bind_addr = "0.0.0.0:${grpcPort}"
+server_addr = "${machine.hostIp}:${grpcPort}"
+runtime_size = 8
+flight_compression = "none"
+
+[mysql]
+addr = "0.0.0.0:${mysqlPort}"
+[postgres]
+addr = "0.0.0.0:${postgresPort}"
+
+[logging]
+dir = "${machine.greptimeHome}/logs/frontend-${cardinal}/"
+
+EOF
+
+greptime frontend start -c ${machine.greptimeHome}/config/frontend-${cardinal}.toml`;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderMachines();
+
+            document.addEventListener('dragend', function(event) {
+                document.querySelectorAll('.dragging').forEach(elem => {
+                    elem.classList.remove('dragging');
+                });
+                document.querySelectorAll('.drag-over').forEach(elem => {
+                    elem.classList.remove('drag-over');
+                });
+                // Don't reset draggedComponent/draggedFromMachine here if drop was successful
+                // They're reset in the drop function
+            });
+        });
+    </script>
+</body>
+</html>
