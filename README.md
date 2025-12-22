@@ -1,60 +1,122 @@
-## GreptimeDB Deploy Helper (Web UI)
+# GreptimeDB Deploy Helper (Vue.js)
 
-An interactive, single-page web app to **design and generate deployment commands** for a GreptimeDB cluster.
+An interactive Vue.js web application to **design and generate deployment commands** for a GreptimeDB cluster.
 
-Open `index.html` in a browser and you can:
+## Features
 
-- **Add physical machines** and specify:
-  - `HOST_IP`
-  - `GREPTIME_HOME` (e.g. `/opt/greptimedb`)
-- **Drag components** onto machines:
-  - `etcd`
-  - `metasrv`
-  - `datanode`
-  - `frontend`
-- The app enforces a valid cluster:
-  - At least 1 `etcd`, 1 `metasrv`, 1 `datanode`, 1 `frontend`
-- **Generate commands** and per-component config snippets with:
-  - Correct `HOST_IP` / `GREPTIME_HOME`
-  - Port bumping when multiple instances live on the same machine
-  - Proper wiring between:
-    - `metasrv` ↔ `etcd`
-    - `datanode` / `frontend` ↔ `metasrv`
+- **Visual drag-and-drop interface** for designing your cluster topology
+- **Component management**: Add etcd, metasrv, datanode, and frontend nodes
+- **Machine management**: Add multiple physical machines with custom configurations
+- **Configuration generation**: Generate bash commands and TOML config files
+- **Syntax highlighting** for generated bash commands
+- **Copy-to-clipboard** functionality for each configuration block
 
-The UI then shows **one command block per component instance**, each with:
+## Tech Stack
 
-- A **highlighted instruction box**:
-  - `Step N: Deploy <component> on <HOST_IP> (Machine X, GREPTIME_HOME=..., instance #k)`
-- A **syntax‑highlighted bash block** containing the actual commands
-- A centered **“Copy This Block”** button
+- **Vue 3** with Composition API
+- **TypeScript** for type safety
+- **Vite** for fast development and building
+- **Highlight.js** for syntax highlighting
+- **Vanilla CSS** with modern styling
 
-You can execute each block on the specified machine in the given order:
+## Development
 
-1. All `etcd` instances
-2. All `metasrv` instances
-3. All `datanode` instances
-4. All `frontend` instances
+### Prerequisites
 
-### Running the app
+- Node.js (v16+)
+- npm or yarn
 
-No build or backend is required; it is a pure HTML/JS page:
+### Getting Started
 
+1. Clone the repository:
 ```bash
-cd /solidigm/greptimedb-deploy-helper
-xdg-open index.html  # or open index.html in your browser
+git clone <repository-url>
+cd greptimedb-deploy-helper
 ```
 
-Any modern browser should work (Chrome, Firefox, Edge, Safari).
+2. Install dependencies:
+```bash
+npm install
+```
 
-### Notes
+3. Start the development server:
+```bash
+npm run dev
+```
 
-- Component **cardinals start from 0**:
-  - `metasrv-0.toml`, `datanode-0.toml`, etc.
-  - `node_id` in datanode configs is 0‑based as well.
-- Ports are automatically bumped per machine when you place multiple instances of the same component on that machine.
-- Configs and commands are generated based on the GreptimeDB examples you provided for:
-  - `etcd`
-  - `metasrv`
-  - `datanode`
-  - `frontend`
+4. Open your browser and navigate to `http://localhost:3000`
 
+### Building for Production
+
+```bash
+npm run build
+```
+
+The built files will be in the `dist` directory.
+
+### Linting
+
+```bash
+npm run lint
+```
+
+### Type Checking
+
+```bash
+npm run type-check
+```
+
+## Usage
+
+1. **Add Physical Machines**: Click the "Add Physical Machine" button to add machines to your cluster topology.
+
+2. **Configure Machines**: For each machine, specify:
+   - Host IP address
+   - GreptimeDB home directory
+
+3. **Drag and Drop Components**: Drag components from the sidebar to machines:
+   - etcd: Configuration store
+   - metasrv: Metadata server
+   - datanode: Data storage node
+   - frontend: Query frontend
+
+4. **Generate Configuration**: Click "Generate Config Files & Commands" to create deployment scripts.
+
+5. **Copy Commands**: Each generated block can be copied to clipboard with the "Copy This Block" button.
+
+## Architecture
+
+The application is structured as follows:
+
+```
+src/
+├── components/        # Vue components
+│   ├── App.vue       # Main application component
+│   ├── Sidebar.vue   # Component palette
+│   ├── MachinesArea.vue # Container for machine cards
+│   ├── MachineCard.vue # Individual machine configuration
+│   ├── MachineComponent.vue # Component instances on machines
+│   ├── GenerationArea.vue # Configuration output
+│   └── MessageDisplay.vue # Notification component
+├── styles/           # CSS files
+│   └── main.css     # Application styles
+├── types/           # TypeScript type definitions
+│   └── index.ts     # Type definitions
+├── utils/           # Utility functions
+│   └── configGenerator.ts # Configuration generation logic
+├── App.vue          # Root component
+└── main.ts          # Application entry point
+```
+
+## Project Configuration
+
+This project uses modern frontend development tools:
+
+- **Vite**: Fast build tool and dev server
+- **TypeScript**: Static type checking
+- **ESLint**: Code linting
+- **Vue TSC**: Vue-specific type checking
+
+## License
+
+[Add your license here]
