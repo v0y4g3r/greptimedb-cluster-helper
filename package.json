@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.ts,.tsx --fix",
     "type-check": "vue-tsc --noEmit",
-    "deploy": "npm run build && wrangler pages deploy dist"
+    "deploy": "npm run build && wrangler pages deploy ./dist --project-name=greptimedb-deploy-helper"
   },
   "dependencies": {
     "@highlightjs/vue-plugin": "^2.1.0",
