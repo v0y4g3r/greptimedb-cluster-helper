@@ -11,7 +11,7 @@
       :key="machine.id"
       :machine="machine"
       @delete="$emit('delete-machine', machine.id)"
-      @update="$emit('update-machine', machine.id, $event.field, $event.value)"
+      @update="(machineId, field, value) => $emit('update-machine', machineId, field, value)"
       @delete-component="$emit('delete-component', machine.id, $event)"
       @drop="$emit('drop', $event, machine.id)"
       @drag-over="$emit('drag-over', $event)"

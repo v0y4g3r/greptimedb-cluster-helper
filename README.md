@@ -16,6 +16,7 @@ An interactive Vue.js web application to **design and generate deployment comman
 - **Vue 3** with Composition API
 - **TypeScript** for type safety
 - **Vite** for fast development and building
+- **vue-draggable-plus** for drag-and-drop functionality
 - **Highlight.js** for syntax highlighting
 - **Vanilla CSS** with modern styling
 
@@ -70,15 +71,17 @@ npm run type-check
 
 1. **Add Physical Machines**: Click the "Add Physical Machine" button to add machines to your cluster topology.
 
-2. **Configure Machines**: For each machine, specify:
-   - Host IP address
-   - GreptimeDB home directory
-
-3. **Drag and Drop Components**: Drag components from the sidebar to machines:
+2. **Drag and Drop Components**: Drag components from the sidebar to machines:
    - etcd: Configuration store
    - metasrv: Metadata server
    - datanode: Data storage node
    - frontend: Query frontend
+
+3. **Configure Machines**: For each machine with assigned components, specify:
+   - Host IP address
+   - GreptimeDB home directory
+
+   > **Note**: Machines without any assigned components don't require configuration.
 
 4. **Generate Configuration**: Click "Generate Config Files & Commands" to create deployment scripts.
 
@@ -90,8 +93,9 @@ The application is structured as follows:
 
 ```
 src/
-├── components/        # Vue components
-│   ├── App.vue       # Main application component
+├── App.vue          # Root component
+├── main.ts          # Application entry point
+├── components/      # Vue components
 │   ├── Sidebar.vue   # Component palette
 │   ├── MachinesArea.vue # Container for machine cards
 │   ├── MachineCard.vue # Individual machine configuration
@@ -102,10 +106,8 @@ src/
 │   └── main.css     # Application styles
 ├── types/           # TypeScript type definitions
 │   └── index.ts     # Type definitions
-├── utils/           # Utility functions
-│   └── configGenerator.ts # Configuration generation logic
-├── App.vue          # Root component
-└── main.ts          # Application entry point
+└── utils/           # Utility functions
+    └── configGenerator.ts # Configuration generation logic
 ```
 
 ## Project Configuration

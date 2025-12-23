@@ -169,11 +169,16 @@ function validateCluster(): string[] {
   }
 
   machines.value.forEach(machine => {
-    if (!machine.hostIp) {
-      errors.push(`Machine ${machine.id} needs a Host IP address`)
-    }
-    if (!machine.greptimeHome) {
-      errors.push(`Machine ${machine.id} needs a GreptimeDB Home directory`)
+    const hasComponents = !!(machine.components && machine.components.length > 0)
+
+    // Only require details for machines that actually have components assigned
+    if (hasComponents) {
+      if (!machine.hostIp || !machine.hostIp.trim()) {
+        errors.push(`Machine ${machine.id} needs a Host IP address`)
+      }
+      if (!machine.greptimeHome || !machine.greptimeHome.trim()) {
+        errors.push(`Machine ${machine.id} needs a GreptimeDB Home directory`)
+      }
     }
   })
 

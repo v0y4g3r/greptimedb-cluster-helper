@@ -39,7 +39,7 @@ import hljs from 'highlight.js'
 import type { GeneratedConfig } from '../types'
 import bash from 'highlight.js/lib/languages/bash'
 
-defineEmits<{
+const emit = defineEmits<{
   generate: []
 }>()
 
