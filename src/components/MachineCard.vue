@@ -81,11 +81,11 @@ function handleDragOver(event: DragEvent) {
 }
 
 function handleDragLeave(event: DragEvent) {
-  ;(event.currentTarget as HTMLElement).classList.remove('drag-over')
+  (event.currentTarget as HTMLElement).classList.remove('drag-over')
 }
 
 function handleDrop(event: DragEvent) {
-  ;(event.currentTarget as HTMLElement).classList.remove('drag-over')
+  (event.currentTarget as HTMLElement).classList.remove('drag-over')
   emit('drop', event, props.machine.id)
 }
 </script>

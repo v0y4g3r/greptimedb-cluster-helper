@@ -51,7 +51,7 @@ export function generateMetasrvConfig(machine: Machine, cardinal: number, machin
   const httpPort = 3100 + machineIndex * 10
 
   return `cat <<EOF > ${machine.greptimeHome}/config/metasrv-${cardinal}.toml
-data_home = "${machine.greptimeHome}/data/metasrv/"
+data_home = "${machine.greptimeHome}/data/metasrv-${cardinal}/"
 bind_addr = "0.0.0.0:${bindPort}"
 server_addr = "${machine.hostIp}:${bindPort}"
 store_addrs = ["${etcdHostIp}:2379"]
@@ -96,7 +96,7 @@ metasrv_addrs = ["${metasrvHostIp}:${metasrvPort}"]
 
 [wal]
 provider = "raft_engine"
-dir = "${machine.greptimeHome}/data/datanode${cardinal}/wal"
+dir = "${machine.greptimeHome}/data/datanode-${cardinal}/wal"
 file_size = "128MB"
 purge_threshold = "1GB"
 sync_write = false
