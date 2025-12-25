@@ -10,10 +10,6 @@ const props = defineProps<{
   message: Message | null
 }>()
 
-const emit = defineEmits<{
-  clear: []
-}>()
-
 const messageClass = computed(() => {
   if (!props.message) return ''
   return `${props.message.type}-message`

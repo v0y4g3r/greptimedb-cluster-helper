@@ -1,7 +1,7 @@
 <template>
   <div class="generation-area">
     <h2 class="section-title">⚡ Generate Configuration</h2>
-    <button class="generate-btn" @click="handleGenerate">
+    <button id="generate-btn" class="generate-btn" @click="handleGenerate">
       Generate Config Files & Commands
     </button>
 

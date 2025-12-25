@@ -1,4 +1,4 @@
-import type { Machine, Component } from '../types'
+import type { Machine } from '../types'
 
 export function getEtcdHostIp(machines: Machine[]): string | null {
   for (const machine of machines) {
@@ -38,7 +38,7 @@ export function getMetasrvPort(machines: Machine[]): number {
   return 3002
 }
 
-export function generateEtcdConfig(machine: Machine, count: number): string {
+export function generateEtcdConfig(machine: Machine): string {
   return `nohup etcd --data-dir=${machine.greptimeHome}/etcd/data > ${machine.greptimeHome}/logs/etcd.log 2>&1 &`
 }
 

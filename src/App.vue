@@ -31,11 +31,12 @@
         @generate="handleGenerate"
       />
     </div>
+    <Tour />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import type { Machine, Message, Component } from './types'
 import type { GeneratedConfig } from './types'
 
@@ -50,6 +51,7 @@ import Sidebar from './components/Sidebar.vue'
 import MachinesArea from './components/MachinesArea.vue'
 import GenerationArea from './components/GenerationArea.vue'
 import MessageDisplay from './components/MessageDisplay.vue'
+import Tour from './components/Tour.vue'
 
 const machines = ref<Machine[]>([])
 const machineIdCounter = ref(1)
@@ -70,7 +72,7 @@ function clearMessage() {
   message.value = null
 }
 
-function addMachine() {
+function addMachine(silent: boolean = false) {
   const machine: Machine = {
     id: machineIdCounter.value++,
     hostIp: '',
@@ -78,8 +80,17 @@ function addMachine() {
     components: []
   }
   machines.value.push(machine)
-  showMessage('Machine added successfully', 'success')
+  if (!silent) {
+    showMessage('Machine added successfully', 'success')
+  }
 }
+
+onMounted(() => {
+  const isFirstTime = !localStorage.getItem('hasVisited')
+  if (isFirstTime) {
+    addMachine(true) // Add first machine silently for new users
+  }
+})
 
 function deleteMachine(machineId: number) {
   machines.value = machines.value.filter(m => m.id !== machineId)

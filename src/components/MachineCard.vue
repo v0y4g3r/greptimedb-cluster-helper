@@ -15,6 +15,7 @@
       <div class="input-group">
         <label>Host IP Address:</label>
         <input
+          :id="`host-ip-input-${machine.id}`"
           type="text"
           placeholder="e.g., 192.168.1.100"
           :value="machine.hostIp"

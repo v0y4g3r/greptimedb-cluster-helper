@@ -5,6 +5,7 @@
       <div
         v-for="component in components"
         :key="component.type"
+        :id="`component-pool-${component.type}`"
         class="component-item"
         draggable="true"
         @dragstart="$emit('drag-start', component.type)"
@@ -14,7 +15,7 @@
       </div>
     </div>
 
-    <button class="add-machine-btn" @click="$emit('add-machine')">
+    <button id="add-machine-btn" class="add-machine-btn" @click="$emit('add-machine')">
       ➕ Add Physical Machine
     </button>
   </div>
